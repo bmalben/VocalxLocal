@@ -7,7 +7,7 @@ const StatusScreen = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState('all'); // 'all', 'pending', 'in-progress', 'resolved'
 
-  // Sample data - in real app, this would come from API
+  // Sample data
   const sampleComplaints = [
     {
       id: '1',
@@ -78,7 +78,6 @@ const StatusScreen = ({ navigation }) => {
 
   const loadComplaints = () => {
     setRefreshing(true);
-    // Simulate API call
     setTimeout(() => {
       setComplaints(sampleComplaints);
       setRefreshing(false);
@@ -97,26 +96,26 @@ const StatusScreen = ({ navigation }) => {
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'pending': return 'time-outline';
-      case 'in-progress': return 'construct-outline';
-      case 'resolved': return 'checkmark-done-circle-outline';
-      case 'rejected': return 'close-circle-outline';
-      default: return 'help-circle-outline';
+      case 'pending': return 'time';
+      case 'in-progress': return 'build';
+      case 'resolved': return 'checkmark-done';
+      case 'rejected': return 'close-circle';
+      default: return 'help';
     }
   };
 
   const getCategoryIcon = (category) => {
     switch (category) {
-      case 'potholes': return 'road-outline';
-      case 'garbage': return 'trash-outline';
-      case 'lighting': return 'bulb-outline';
-      case 'water': return 'water-outline';
-      case 'drainage': return 'water-outline';
-      case 'safety': return 'shield-checkmark-outline';
-      case 'parks': return 'leaf-outline';
-      case 'noise': return 'volume-high-outline';
-      case 'animals': return 'paw-outline';
-      default: return 'alert-circle-outline';
+      case 'potholes': return 'car';
+      case 'garbage': return 'trash';
+      case 'lighting': return 'bulb';
+      case 'water': return 'water';
+      case 'drainage': return 'water';
+      case 'safety': return 'shield-checkmark';
+      case 'parks': return 'leaf';
+      case 'noise': return 'volume-high';
+      case 'animals': return 'paw';
+      default: return 'alert-circle';
     }
   };
 
@@ -135,7 +134,11 @@ const StatusScreen = ({ navigation }) => {
   };
 
   const handleComplaintPress = (complaint) => {
-    navigation.navigate('ComplaintDetail', { complaint });
+    Alert.alert(
+      complaint.title,
+      `Status: ${getStatusText(complaint.status)}\n\n${complaint.description}`,
+      [{ text: 'OK' }]
+    );
   };
 
   const renderComplaintCard = (complaint) => (
@@ -162,7 +165,7 @@ const StatusScreen = ({ navigation }) => {
 
       <View style={styles.cardFooter}>
         <View style={styles.locationInfo}>
-          <Ionicons name="location-outline" size={14} color="#666" />
+          <Ionicons name="location" size={14} color="#666" />
           <Text style={styles.locationText}>{complaint.location}</Text>
         </View>
         <Text style={styles.dateText}>{complaint.date}</Text>
@@ -221,7 +224,7 @@ const StatusScreen = ({ navigation }) => {
           style={[styles.filterTab, filter === 'pending' && styles.filterTabActive]}
           onPress={() => setFilter('pending')}
         >
-          <Ionicons name="time-outline" size={16} color={filter === 'pending' ? '#fff' : '#f39c12'} />
+          <Ionicons name="time" size={16} color={filter === 'pending' ? '#fff' : '#f39c12'} />
           <Text style={[styles.filterText, filter === 'pending' && styles.filterTextActive]}>Pending</Text>
         </TouchableOpacity>
         
@@ -229,7 +232,7 @@ const StatusScreen = ({ navigation }) => {
           style={[styles.filterTab, filter === 'in-progress' && styles.filterTabActive]}
           onPress={() => setFilter('in-progress')}
         >
-          <Ionicons name="construct-outline" size={16} color={filter === 'in-progress' ? '#fff' : '#3498db'} />
+          <Ionicons name="build" size={16} color={filter === 'in-progress' ? '#fff' : '#3498db'} />
           <Text style={[styles.filterText, filter === 'in-progress' && styles.filterTextActive]}>In Progress</Text>
         </TouchableOpacity>
         
@@ -237,7 +240,7 @@ const StatusScreen = ({ navigation }) => {
           style={[styles.filterTab, filter === 'resolved' && styles.filterTabActive]}
           onPress={() => setFilter('resolved')}
         >
-          <Ionicons name="checkmark-done-circle-outline" size={16} color={filter === 'resolved' ? '#fff' : '#2ecc71'} />
+          <Ionicons name="checkmark-done" size={16} color={filter === 'resolved' ? '#fff' : '#2ecc71'} />
           <Text style={[styles.filterText, filter === 'resolved' && styles.filterTextActive]}>Resolved</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -256,7 +259,7 @@ const StatusScreen = ({ navigation }) => {
       >
         {filteredComplaints.length === 0 ? (
           <View style={styles.emptyState}>
-            <Ionicons name="document-text-outline" size={64} color="#ddd" />
+            <Ionicons name="document-text" size={64} color="#ddd" />
             <Text style={styles.emptyStateTitle}>No complaints found</Text>
             <Text style={styles.emptyStateText}>
               {filter === 'all' 
@@ -337,7 +340,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#f8f9fa',
     paddingHorizontal: 15,
-    // height:100,
     paddingVertical: 2,
     borderRadius: 20,
     marginHorizontal: 5,
