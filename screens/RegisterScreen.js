@@ -1,35 +1,40 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, KeyboardAvoidingView, Platform, ScrollView, Alert } from 'react-native';
+import { registerAPI } from '../services/allAPI';
 
 const RegisterScreen = ({ navigation }) => {
-  const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
+  const [userData, setUserData] = useState({
+    userName: "",
+    email: "",
+    password: "",
+    confirmPassword: ""
   });
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleRegister = () => {
-    const { fullName, email, password, confirmPassword } = formData;
+  const handleRegister = async () => {
+  try {
+    const result = await registerAPI({ userName, email, password });
     
-    if (!fullName || !email || !password || !confirmPassword) {
-      alert('Please fill all fields');
-      return;
+    if (result.status === 201) {
+      Alert.alert("Success", result.data.message);
+      navigation.navigate('Login');
+    } else {
+      Alert.alert("Error", result.data.message);
     }
-
-    if (password !== confirmPassword) {
-      alert('Passwords do not match');
-      return;
-    }
-
-    // Registration logic here
-    alert('Registration successful!');
-    navigation.navigate('Login');
-  };
+  } catch (error) {
+    Alert.alert("Error", "Registration failed");
+  }
+};
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setUserData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleLogin = () => {
+    navigation.navigate('Login');
   };
 
   return (
@@ -48,13 +53,14 @@ const RegisterScreen = ({ navigation }) => {
         <Text style={styles.subtitle}>Join us today!</Text>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Full Name</Text>
+          <Text style={styles.label}>Username</Text>
           <TextInput
             style={styles.input}
-            placeholder="Enter your full name"
+            placeholder="Enter your username"
             placeholderTextColor="#999"
-            value={formData.fullName}
-            onChangeText={(text) => handleInputChange('fullName', text)}
+            value={userData.userName}
+            onChangeText={(text) => handleInputChange('userName', text)}
+            autoCapitalize="none"
           />
         </View>
 
@@ -64,7 +70,7 @@ const RegisterScreen = ({ navigation }) => {
             style={styles.input}
             placeholder="Enter your email"
             placeholderTextColor="#999"
-            value={formData.email}
+            value={userData.email}
             onChangeText={(text) => handleInputChange('email', text)}
             keyboardType="email-address"
             autoCapitalize="none"
@@ -77,7 +83,7 @@ const RegisterScreen = ({ navigation }) => {
             style={styles.input}
             placeholder="Create a password"
             placeholderTextColor="#999"
-            value={formData.password}
+            value={userData.password}
             onChangeText={(text) => handleInputChange('password', text)}
             secureTextEntry={!showPassword}
           />
@@ -89,7 +95,7 @@ const RegisterScreen = ({ navigation }) => {
             style={styles.input}
             placeholder="Confirm your password"
             placeholderTextColor="#999"
-            value={formData.confirmPassword}
+            value={userData.confirmPassword}
             onChangeText={(text) => handleInputChange('confirmPassword', text)}
             secureTextEntry={!showPassword}
           />
@@ -110,7 +116,7 @@ const RegisterScreen = ({ navigation }) => {
 
         <View style={styles.loginContainer}>
           <Text style={styles.loginText}>Already have an account? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+          <TouchableOpacity onPress={handleLogin}>
             <Text style={styles.loginLink}>Sign In</Text>
           </TouchableOpacity>
         </View>

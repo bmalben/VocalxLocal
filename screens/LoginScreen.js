@@ -1,21 +1,76 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, KeyboardAvoidingView, Platform, ScrollView, Alert } from 'react-native';
+import { loginAPI } from '../services/allAPI';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LoginScreen = ({ navigation }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [userData, setUserData] = useState({
+    email: "",
+    password: "",
+  });
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
-    if (email && password) {
-      navigation.navigate('Home');
-    } else {
-      alert('Please enter both email and password');
+  const handleLogin = async () => {
+    const { email, password } = userData; // FIXED: Get from userData
+    
+    if (!email || !password) {
+      Alert.alert("Error", "Please fill in all fields");
+      return;
+    }
+
+    setLoading(true);
+    
+    try {
+      console.log("Sending login request with:", { email, password });
+      const result = await loginAPI({ email, password });
+      // console.log("API Response:", result);
+      
+      // Check if result exists and has status
+      if (result && result.status === 200) {
+        // Check the actual response structure from your backend
+        console.log("Response data structure:", result.data);
+        
+        // Store token and user data - adjust based on your actual response
+        await AsyncStorage.setItem("token", result.data.token);
+        
+        // Check if it's result.data.user or result.data.existingUser
+        const userDataToStore = result.data.user || result.data.existingUser;
+        if (userDataToStore) {
+          await AsyncStorage.setItem("userData", JSON.stringify(userDataToStore));
+        }
+        
+        // Navigate to home
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Home' }],
+        });
+        
+      } else {
+        // Handle different error scenarios
+        const errorMessage = result?.data?.message || 
+                            result?.data?.error || 
+                            "Login failed. Please check your credentials.";
+        Alert.alert("Error", errorMessage);
+      }
+      
+    } catch (error) {
+      console.log("Login error:", error);
+      Alert.alert("Error", "Network error. Please check your connection and server URL.");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleRegister = () => {
     navigation.navigate('Register');
+  };
+
+  const handleInputChange = (field, value) => {
+    setUserData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   return (
@@ -39,10 +94,11 @@ const LoginScreen = ({ navigation }) => {
             style={styles.input}
             placeholder="Enter your email"
             placeholderTextColor="#999"
-            value={email}
-            onChangeText={setEmail}
+            value={userData.email}
+            onChangeText={(text) => handleInputChange('email', text)}
             keyboardType="email-address"
             autoCapitalize="none"
+            editable={!loading}
           />
         </View>
 
@@ -52,13 +108,15 @@ const LoginScreen = ({ navigation }) => {
             style={styles.input}
             placeholder="Enter your password"
             placeholderTextColor="#999"
-            value={password}
-            onChangeText={setPassword}
+            value={userData.password}
+            onChangeText={(text) => handleInputChange('password', text)}
             secureTextEntry={!showPassword}
+            editable={!loading}
           />
           <TouchableOpacity 
             style={styles.showPasswordButton}
             onPress={() => setShowPassword(!showPassword)}
+            disabled={loading}
           >
             <Text style={styles.showPasswordText}>
               {showPassword ? 'Hide' : 'Show'}
@@ -66,17 +124,23 @@ const LoginScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={styles.forgotPassword}>
+        <TouchableOpacity style={styles.forgotPassword} disabled={loading}>
           <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-          <Text style={styles.loginButtonText}>Sign In</Text>
+        <TouchableOpacity 
+          style={[styles.loginButton, loading && styles.loginButtonDisabled]} 
+          onPress={handleLogin}
+          disabled={loading}
+        >
+          <Text style={styles.loginButtonText}>
+            {loading ? 'Signing In...' : 'Sign In'}
+          </Text>
         </TouchableOpacity>
 
         <View style={styles.signupContainer}>
           <Text style={styles.signupText}>Don't have an account? </Text>
-          <TouchableOpacity onPress={handleRegister}>
+          <TouchableOpacity onPress={handleRegister} disabled={loading}>
             <Text style={styles.signupLink}>Sign Up</Text>
           </TouchableOpacity>
         </View>
@@ -152,11 +216,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   loginButton: {
-    backgroundColor: '#f8f8f8',
+    backgroundColor: '#fff',
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
     marginBottom: 20,
+  },
+  loginButtonDisabled: {
+    backgroundColor: '#ccc',
   },
   loginButtonText: {
     color: '#007AFF',
