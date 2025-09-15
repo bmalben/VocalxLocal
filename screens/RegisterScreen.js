@@ -13,7 +13,9 @@ const RegisterScreen = ({ navigation }) => {
 
   const handleRegister = async () => {
   try {
-    const result = await registerAPI({ userName, email, password });
+    console.log("REgister button clicked", userData)
+    const result = await registerAPI(userData);
+
     
     if (result.status === 201) {
       Alert.alert("Success", result.data.message);
@@ -128,7 +130,7 @@ const RegisterScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#fcbd01',
   },
   scrollContainer: {
     flexGrow: 1,
@@ -182,14 +184,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   registerButton: {
-    backgroundColor: '#fcbd01',
+    backgroundColor: '#fff',
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
     marginBottom: 20,
   },
   registerButtonText: {
-    color: '#fff',
+    color: '#007AFF',
     fontSize: 18,
     fontWeight: 'bold',
   },

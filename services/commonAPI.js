@@ -4,6 +4,7 @@ import axios from "axios";
 export const commonAPI = async (httpRequest, url, reqBody, reqHeader) => {
   const token = await AsyncStorage.getItem("token");
   // const token = sessionStorage.getItem("token");
+
   const reqConfig = {
     method: httpRequest,
     url,
@@ -11,8 +12,13 @@ export const commonAPI = async (httpRequest, url, reqBody, reqHeader) => {
     headers: reqHeader || {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`, // Include token
+      "Access-Control-Allow-Origin": "*",
     },
   };
+
+
+
+
   return await axios(reqConfig)
     .then((res) => {
       return res;
